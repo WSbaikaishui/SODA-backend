@@ -28,11 +28,16 @@ def do_register(request):
     pwd = request.POST['password']
     phone = request.POST['phone']
     type = request.POST['type']
+
+    user = User.objects.filter(user_name=uname).first()
+    if user is not None:
+        return JsonResponse({'msg':"用户名已存在"})
+
     scenic = Scenic.objects.filter(scenic_id=request.POST['scenic']).first()
     if scenic is not None:
         scenic_id = scenic.scenic_id
     else:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({"msg": "景区不存在"})
     user = User(user_name = uname,
                 pass_word = pwd,
                 phone_num = phone,
@@ -43,4 +48,4 @@ def do_register(request):
         return JsonResponse({"status": 200})
     except Exception as e:
         print(e)
-        return JsonResponse({"status": 400})
+        return JsonResponse({"msg": '注册错误！'})

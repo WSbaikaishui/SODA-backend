@@ -28,9 +28,6 @@ schema_view=get_schema_view(title='API',renderer_classes=[OpenAPIRenderer,Swagge
 app_name='SODA'
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login',do_login),
-    path('camera/list',camera_list),
-    path('register', do_register),
     path('',include('SODA.urls')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('docs/',schema_view,name='docs')

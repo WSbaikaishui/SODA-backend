@@ -1,14 +1,12 @@
 import request
+import itertools
 from django.core import serializers
-
-
-import request
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from SODA.models import Camera, User,Scenic
+from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast
 # Create your views here.
 
 @csrf_exempt
@@ -51,12 +49,30 @@ def do_register(request):
         print(e)
         return JsonResponse({"msg": '注册错误！'})
 
+@csrf_exempt
+@api_view(['POST'])
+def find_all(request):
+    cameraHistory=CameraHistory.objects.all().first()
+    data=cameraHistory.camera.scenic
+    jsonData=serializers.serialize("json",data)
+    print(jsonData)
+    return Response({'data':jsonData})
+
+@csrf_exempt
+@api_view(['POST'])
+def passenger_flow_forecast_list(request):
+    passengerFlowForecast=PassengerFlowForecast.objects.all()
+    jsonData=serializers.serialize("json",passengerFlowForecast)
+    print(jsonData)
+    return JsonResponse({'data':jsonData})
+
 
 @csrf_exempt
 @api_view(['POST'])
 def camera_list(request):
     cameras = Camera.objects.all()
-    data=[];
-    data=serializers.serialize("json",cameras)
+    data=set();
+    for camera in cameras :
+        data.add(camera.camera_id);
     print(data)
-    return Response(data)
+    return Response({'camera_ids': data})

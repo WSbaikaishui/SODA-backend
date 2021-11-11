@@ -79,7 +79,7 @@ class AuthUserUserPermissions(models.Model):
 
 class Camera(models.Model):
     camera_id = models.AutoField(primary_key=True)
-    scenic_id = models.IntegerField(blank=True, null=True)
+    scenic = models.ForeignKey("Scenic", on_delete=models.CASCADE)
     coordinate = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
@@ -89,7 +89,7 @@ class Camera(models.Model):
 
 class CameraHistory(models.Model):
     history_id = models.BigAutoField(primary_key=True)
-    camera_id = models.IntegerField(blank=True, null=True)
+    camera = models.ForeignKey("Camera", on_delete=models.CASCADE)
     time = models.DateTimeField(blank=True, null=True)
     number = models.IntegerField(blank=True, null=True)
     picture = models.CharField(max_length=255, blank=True, null=True)

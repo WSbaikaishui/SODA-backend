@@ -13,13 +13,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
-from SODA.views import *
 
+from django.contrib import admin
+from django.urls import path, include
+
+
+from rest_framework.schemas import get_schema_view
+from rest_framework_swagger.renderers import SwaggerUIRenderer,OpenAPIRenderer
+
+schema_view=get_schema_view(title='API',renderer_classes=[OpenAPIRenderer,SwaggerUIRenderer])
+
+
+
+app_name='SODA'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login',do_login),
     path('camera/list',camera_list),
-    path('register', do_register)
+    path('register', do_register),
+    path('',include('SODA.urls')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('docs/',schema_view,name='docs')
 ]

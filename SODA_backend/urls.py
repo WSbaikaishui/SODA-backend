@@ -20,5 +20,6 @@ from SODA.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login',do_login),
+    path('camera/list',camera_list),
     path('register', do_register)
 ]

@@ -1,11 +1,13 @@
 import request
+import json
+from django.core import serializers
 
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from SODA.models import User,Scenic
+from SODA.models import Camera, User,Scenic
 # Create your views here.
 
 @csrf_exempt
@@ -18,8 +20,6 @@ def do_login(request):
         return Response({'user_id': user.user_id})
     else:
         return JsonResponse({'msg': "用户名或者密码错误"})
-
-
 
 @csrf_exempt
 @api_view(['POST'])
@@ -49,3 +49,13 @@ def do_register(request):
     except Exception as e:
         print(e)
         return JsonResponse({"msg": '注册错误！'})
+
+
+@csrf_exempt
+@api_view(['POST'])
+def camera_list(request):
+    cameras = Camera.objects.all()
+    data=[];
+    data=serializers.serialize("json",cameras)
+    print(data)
+    return Response(data)

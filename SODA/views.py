@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast
+from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast, camera_model
+from django.db import connection
 # Create your views here.
 
 @csrf_exempt
@@ -52,11 +53,20 @@ def do_register(request):
 @csrf_exempt
 @api_view(['POST'])
 def find_all(request):
-    cameraHistory=CameraHistory.objects.all().first()
-    data=cameraHistory.camera.scenic
-    jsonData=serializers.serialize("json",data)
-    print(jsonData)
-    return Response({'data':jsonData})
+    # cameraHistory=CameraHistory.objects.all().first()
+    # data=cameraHistory.camera.scenic
+    # jsonData=serializers.serialize("json",data)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from camer_model",)
+            data = dictfetchall(cursor)
+        return JsonResponse(data)
+    except Exception as e:
+        return Response({})
+    # camera_list = camera_model.objects.all()
+    # print(camera_list)
+    # return Response({'data':camera_list})
 
 @csrf_exempt
 @api_view(['POST'])
@@ -76,3 +86,11 @@ def camera_list(request):
         data.add(camera.camera_id);
     print(data)
     return Response({'camera_ids': data})
+
+
+def dictfetchall(cursor):
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]

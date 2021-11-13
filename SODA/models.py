@@ -193,16 +193,16 @@ class User(models.Model):
         managed = False
         db_table = 'user'
 
-
-class camera_model(models.Model):
-    camera_id = models.ForeignKey("Camera", on_delete=models.CASCADE)
-    scenic_id = models.ForeignKey("Scenic", on_delete=models.CASCADE)
-    parent_id = models.IntegerField(blank=True, null=True)
-    coordinate = models.CharField(max_length=30, blank=True, null=True)
-    time = models.DateTimeField(blank=True, null=True)
-    picture =  models.CharField(max_length=255, blank=True, null=True)
-    number = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'camera_model'
+#
+# class camera_model(models.Model):
+#     camera_id = models.ForeignKey("Camera", on_delete=models.CASCADE)
+#     scenic_id = models.ForeignKey("Scenic", on_delete=models.CASCADE)
+#     parent_id = models.IntegerField(blank=True, null=True)
+#     coordinate = models.CharField(max_length=30, blank=True, null=True)
+#     time = models.DateTimeField(blank=True, null=True)
+#     picture =  models.CharField(max_length=255, blank=True, null=True)
+#     number = models.IntegerField(blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'camera_model'

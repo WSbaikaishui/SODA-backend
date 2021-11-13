@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast, camera_model
+from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast
+from SODA.serializers import PassengerFlowForecastSerializer
 from django.db import connection
 # Create your views here.
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -52,40 +54,35 @@ def do_register(request):
 
 @csrf_exempt
 @api_view(['POST'])
-def find_all(request):
-    # cameraHistory=CameraHistory.objects.all().first()
-    # data=cameraHistory.camera.scenic
-    # jsonData=serializers.serialize("json",data)
+def distribution(request):
+    parent_id = request.POST['parent_id']
     try:
         with connection.cursor() as cursor:
             cursor.execute(
-                "select * from camer_model",)
+                "select * from Distribution where scenic_parent_id = %s",(parent_id))
             data = dictfetchall(cursor)
-        return JsonResponse(data)
+        return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
     except Exception as e:
-        return Response({})
-    # camera_list = camera_model.objects.all()
-    # print(camera_list)
-    # return Response({'data':camera_list})
-
-@csrf_exempt
-@api_view(['POST'])
-def passenger_flow_forecast_list(request):
-    passengerFlowForecast=PassengerFlowForecast.objects.all()
-    jsonData=serializers.serialize("json",passengerFlowForecast)
-    print(jsonData)
-    return JsonResponse({'data':jsonData})
-
-
-@csrf_exempt
-@api_view(['POST'])
-def camera_list(request):
-    cameras = Camera.objects.all()
-    data=set();
-    for camera in cameras :
-        data.add(camera.camera_id);
-    print(data)
-    return Response({'camera_ids': data})
+        return Response([])
+#
+# @csrf_exempt
+# @api_view(['POST'])
+# def passenger_flow_forecast_list(request):
+#     passengerFlowForecast=PassengerFlowForecast.objects.all()
+#     jsonData=serializers.serialize("json",passengerFlowForecast)
+#     print(jsonData)
+#     return JsonResponse({'data':jsonData})
+#
+#
+# @csrf_exempt
+# @api_view(['POST'])
+# def camera_list(request):
+#     cameras = Camera.objects.all()
+#     data=set();
+#     for camera in cameras :
+#         data.add(camera.camera_id);
+#     print(data)
+#     return Response({'camera_ids': data})
 
 
 def dictfetchall(cursor):
@@ -94,3 +91,20 @@ def dictfetchall(cursor):
         dict(zip(columns, row))
         for row in cursor.fetchall()
     ]
+
+@csrf_exempt
+@api_view(['GET'])
+def get_predict_list(request):
+    scenic_id = request.GET["scenic_id"]
+    scenic = Scenic.objects.filter(scenic_id= scenic_id).first()
+    print(scenic)
+    if scenic is not None:
+        predict_list = PassengerFlowForecast.objects.filter(scenic_id=scenic_id)
+        print(predict_list)
+        serializer = PassengerFlowForecastSerializer(predict_list, many=True)
+        return Response(serializer.data)
+    else:
+        return JsonResponse({'msg':'不存在此景点'})
+# @csrf_exempt
+# @api_view(['GET'])
+# def heat_map(request):

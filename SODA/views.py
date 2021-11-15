@@ -1,5 +1,5 @@
 import request
-import itertools
+import random
 from django.core import serializers
 from django.http import JsonResponse
 from rest_framework.response import Response
@@ -64,25 +64,41 @@ def distribution(request):
         return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
     except Exception as e:
         return Response([])
-#
-# @csrf_exempt
-# @api_view(['POST'])
-# def passenger_flow_forecast_list(request):
-#     passengerFlowForecast=PassengerFlowForecast.objects.all()
-#     jsonData=serializers.serialize("json",passengerFlowForecast)
-#     print(jsonData)
-#     return JsonResponse({'data':jsonData})
-#
-#
-# @csrf_exempt
-# @api_view(['POST'])
-# def camera_list(request):
-#     cameras = Camera.objects.all()
-#     data=set();
-#     for camera in cameras :
-#         data.add(camera.camera_id);
-#     print(data)
-#     return Response({'camera_ids': data})
+
+@csrf_exempt
+@api_view(['POST'])
+def camera_list(request):
+    cameras = Camera.objects.all()
+    data=set();
+    for camera in cameras :
+        data.add(camera.camera_id);
+    if data is not None:
+      return Response(data)
+    else:
+      return JsonResponse({'msg':'不存在摄像头'})
+
+@csrf_exempt
+@api_view(['GET'])
+def get_map(request):
+    camera_id = request.GET["camera_id"]
+    time = request.GET["time"]
+    cameraHistory = CameraHistory.objects.filter(
+        camera_id=camera_id, time=time).first()
+    if cameraHistory is not None:
+        images = {"src": cameraHistory.picture, "createdAt": cameraHistory.time}
+        imagesList = [images]
+        cemeras = {"images": imagesList, "cemeraid": camera_id,
+                "name": "监控点1-1号监控"}
+        cemerasList = [cemeras]
+        data = {"cemeras": cemerasList, "Industry": random.randint(1111111, 9999999),
+                "name": random.randint(11111111, 99999999)}
+        result = {"data": data,  "name": "监控点"+str(random.randint(1, 99)),
+                "coordinates": [random.randint(1, 99), random.randint(1, 99)],
+                "id": cameraHistory.history_id}
+        return Response([result])
+    else:
+        return JsonResponse({'msg':'不存在摄像头数据'})
+
 
 
 def dictfetchall(cursor):

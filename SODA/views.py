@@ -1,5 +1,6 @@
 import request
 import random
+import time
 from django.core import serializers
 from django.http import JsonResponse
 from rest_framework.response import Response
@@ -81,11 +82,13 @@ def camera_list(request):
 @api_view(['GET'])
 def get_map(request):
     camera_id = request.GET["camera_id"]
-    time = request.GET["time"]
+    timestamp = int(request.GET["time"])
+    tempTime = time.localtime(timestamp)
+    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
     cameraHistory = CameraHistory.objects.filter(
-        camera_id=camera_id, time=time).first()
+        camera_id=camera_id, time=timeStr).first()
     if cameraHistory is not None:
-        images = {"src": cameraHistory.picture, "createdAt": cameraHistory.time}
+        images = {"src": cameraHistory.picture, "createdAt": timestamp}
         imagesList = [images]
         cemeras = {"images": imagesList, "cemeraid": camera_id,
                 "name": "监控点1-1号监控"}

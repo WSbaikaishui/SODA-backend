@@ -10,6 +10,8 @@ from rest_framework.decorators import api_view
 from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast
 from SODA.serializers import PassengerFlowForecastSerializer
 from django.db import connection
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework_jwt.settings import api_settings
 # Create your views here.
 
 

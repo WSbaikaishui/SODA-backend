@@ -68,6 +68,21 @@ def distribution(request):
 
 @csrf_exempt
 @api_view(['POST'])
+def camera_time_list(request):
+    camera_id = request.POST['camera_id']
+    cameraHistoryList = CameraHistory.objects.filter(
+        camera_id=camera_id)
+    if cameraHistoryList is not None:
+        time=set()
+        for c in cameraHistoryList :
+            time.add(c.time)
+        return Response(time)
+    else:
+        return JsonResponse({'msg':'不存在摄像头'})
+
+
+@csrf_exempt
+@api_view(['GET'])
 def camera_list(request):
     cameras = Camera.objects.all()
     data=set();
@@ -79,25 +94,30 @@ def camera_list(request):
       return JsonResponse({'msg':'不存在摄像头'})
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 def get_map(request):
-    camera_id = request.GET["camera_id"]
-    timestamp = int(request.GET["time"])
+    scenic_id = request.POST["scenic_id"]
+    timestamp = int(request.POST["time"])
     tempTime = time.localtime(timestamp)
     timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
-    cameraHistory = CameraHistory.objects.filter(
-        camera_id=camera_id, time=timeStr).first()
-    if cameraHistory is not None:
-        images = {"src": cameraHistory.picture, "createdAt": timestamp}
-        imagesList = [images]
-        cemeras = {"images": imagesList, "cemeraid": camera_id,
+    css=Camera.objects.filter(scenic_id=scenic_id)
+    chsall=set()
+    for cs in css :
+       chs=cs.camerahistory_set.filter(time=timeStr)
+       for ch in chs :
+           chsall.add(ch)
+    if chsall is not None:
+        cemerasList=[]
+        for ch in chsall:
+          images = {"src": ch.picture, "createdAt": timestamp}
+          cemeras = {"images": images, "cemeraid": ch.camera_id,
                 "name": "监控点1-1号监控"}
-        cemerasList = [cemeras]
+          cemerasList.append(cemeras)
         data = {"cemeras": cemerasList, "Industry": random.randint(1111111, 9999999),
                 "name": random.randint(11111111, 99999999)}
         result = {"data": data,  "name": "监控点"+str(random.randint(1, 99)),
                 "coordinates": [random.randint(1, 99), random.randint(1, 99)],
-                "id": cameraHistory.history_id}
+                "id": scenic_id}
         return Response([result])
     else:
         return JsonResponse({'msg':'不存在摄像头数据'})

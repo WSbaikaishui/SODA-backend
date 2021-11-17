@@ -18,7 +18,6 @@ from django.db import connection
 def do_login(request):
     # uname = request.POST['username']
     uname = request.POST.get('username')
-    print(uname)
     pwd = request.POST.get('password')
     user = User.objects.filter(user_name = uname).first()
     if user is not None:
@@ -41,7 +40,7 @@ def do_register(request):
     if user is not None:
         return JsonResponse({'msg':"用户名已存在"})
 
-    scenic = Scenic.objects.filter(scenic_id=request.POST['scenic']).first()
+    scenic = Scenic.objects.filter(scenic_id=request.POST.get('scenic')).first()
     if scenic is not None:
         scenic_id = scenic.scenic_id
     else:
@@ -74,7 +73,7 @@ def distribution(request):
 @csrf_exempt
 @api_view(['POST'])
 def camera_time_list(request):
-    camera_id = request.POST['camera_id']
+    camera_id = request.POST.get('camera_id')
     cameraHistoryList = CameraHistory.objects.filter(
         camera_id=camera_id)
     if cameraHistoryList is not None:
@@ -101,8 +100,8 @@ def camera_list(request):
 @csrf_exempt
 @api_view(['POST'])
 def get_map(request):
-    scenic_id = request.POST["scenic_id"]
-    timestamp = int(request.POST["time"])
+    scenic_id = request.POST.get("scenic_id")
+    timestamp = int(request.POST.get("time"))
     tempTime = time.localtime(timestamp)
     timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
     css=Camera.objects.filter(scenic_id=scenic_id)

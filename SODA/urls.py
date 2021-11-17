@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/get_predict_list',get_predict_list),
     path('api/get_map', get_map),
     path('api/heat_map', heat_map),
+    path('api/most_association', most_association),
 
     # path('forecast/list',  passenger_flow_forecast_list),
     ]

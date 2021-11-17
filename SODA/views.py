@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast
+from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast,ScenicPassengerHeatmap
 from SODA.serializers import PassengerFlowForecastSerializer
 from django.db import connection
 # Create your views here.
@@ -166,58 +166,57 @@ def dictfetchall(cursor):
 @csrf_exempt
 @api_view(['GET'])
 def get_predict_list(request):
-    parent_id = request.GET['scenic_id']
+    scenic_id = request.GET['scenic_id']
     time = []
     actual = []
     forecast = []
+    predictList = PassengerFlowForecast.objects.filter(scenic_id = scenic_id)
+    print(predictList)
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "select * from predictList where scenic_id = %s", (parent_id))
-            data = dictfetchall(cursor)
-            for item in data:
-                time.append(item['time'])
-                actual.append(item['actual_number'])
-                forecast.append(item['forecast_number'])
-        return JsonResponse({'parent_id': parent_id,'time':time, 'actual':actual, 'forecast':forecast})
+        for item in predictList:
+            print(item.time)
+            time.append(item.time)
+            actual.append(item.actual_number)
+            forecast.append(item.forecast_number)
+    # try:
+    #     with connection.cursor() as cursor:
+    #         cursor.execute(
+    #             "select * from predictList where scenic_id = %s", (parent_id))
+    #         data = dictfetchall(cursor)
+    #         for item in data:
+    #             time.append(item['time'])
+    #             actual.append(item['actual_number'])
+    #             forecast.append(item['forecast_number'])
+        return JsonResponse({'scenic_id': scenic_id,'time':time, 'actual':actual, 'forecast':forecast})
     except Exception as e:
         return Response([])
 
 @csrf_exempt
-@api_view(['POST'])
+@api_view(['GET'])
 def heat_map(request):
-    parent_id = request.POST.get('scenic_id')
-    timestamp = int(request.POST.get("time"))
-    tempTime = time.localtime(timestamp)
-    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
-    sceniclist =  Scenic.objects.filter(parent_id=parent_id)
-    print(sceniclist)
-    scenicpointList = []
+    parent_id = request.GET['scenic_id']
+    sceniclist = ScenicPassengerHeatmap.objects.filter(parent_id=parent_id)
+    List = []
     for item in sceniclist:
-        passengerflowforecast = PassengerFlowForecast.objects.filter(scenic_id=item.scenic_id).first()
-        if passengerflowforecast is not None:
-            print(passengerflowforecast)
-        else:
-            continue
-        # scenicpointList.append([passengerflowforecast.scenic_id,item.coordinate,passengerflowforecast.actual_number])
-    return JsonResponse({"1"})
+       x = item.coordinate.split(",")
+       List.append([item.scenic_id,[float(x[0][1:]),float(x[1][:-1])], item.passenger_number])
+    return JsonResponse({'data':List})
+
 
 @csrf_exempt
 @api_view(['GET'])
-def association(request):
-    parent_id = request.get['scenic_id']
-    timestamp = int(request.POST.get("time"))
-    tempTime = time.localtime(timestamp)
-    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
-    sceniclist =  Scenic.objects.filter(parent_id=parent_id)
-    print(sceniclist)
-    scenicpointList = []
-    for item in sceniclist:
-        passengerflowforecast = PassengerFlowForecast.objects.filter(scenic_id=item.scenic_id).first()
-        if passengerflowforecast is not None:
-            print(passengerflowforecast)
-        else:
-            continue
-        # scenicpointList.append([passengerflowforecast.scenic_id,item.coordinate,passengerflowforecast.actual_number])
-    return JsonResponse({"1"})
-
+def most_association(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from associations limit 10")
+            data = dictfetchall(cursor)
+        List = []
+        i = 0
+        for item in data:
+            i += 1
+            print(item['scenic_name1'])
+            List.append({'name':item['scenic_name1'] + ' VS ' + item['scenic_name2'] ,'value':round(float((item['number']-726000)/1000 - i),2)})
+        return JsonResponse({'data':List})
+    except Exception as e:
+        return Response([])

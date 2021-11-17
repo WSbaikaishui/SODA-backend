@@ -73,8 +73,8 @@ def distribution(request):
 @csrf_exempt
 @api_view(['POST'])
 def camera_time_list(request):
-    camera_id = request.POST['camera_id']
-    scenic_id = request.POST['scenic_id']
+    camera_id = request.POST.get('camera_id')
+    scenic_id = request.POST.get('scenic_id')
     cameraHistoryList=[]
     if camera_id !='':
         cameraHistories = CameraHistory.objects.filter(camera_id=camera_id)
@@ -100,9 +100,9 @@ def camera_time_list(request):
 @csrf_exempt
 @api_view(['GET'])
 def camera_list(request):
-    camera_id = request.POST['camera_id']
-    scenic_id = request.POST['scenic_id']
-    timestamp = request.POST["time"]
+    camera_id = request.POST.get('camera_id')
+    scenic_id = request.POST.get('scenic_id')
+    timestamp = request.POST.get("time")
     cameraHistoryList=[]
     if camera_id !='':
         cameraHistories = CameraHistory.objects.filter(camera_id=camera_id)

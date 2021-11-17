@@ -98,7 +98,7 @@ def camera_time_list(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 def camera_list(request):
     camera_id = request.POST.get('camera_id')
     scenic_id = request.POST.get('scenic_id')
@@ -183,6 +183,41 @@ def get_predict_list(request):
     except Exception as e:
         return Response([])
 
-# @csrf_exempt
-# @api_view(['GET'])
-# def heat_map(request):
+@csrf_exempt
+@api_view(['POST'])
+def heat_map(request):
+    parent_id = request.POST.get('scenic_id')
+    timestamp = int(request.POST.get("time"))
+    tempTime = time.localtime(timestamp)
+    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
+    sceniclist =  Scenic.objects.filter(parent_id=parent_id)
+    print(sceniclist)
+    scenicpointList = []
+    for item in sceniclist:
+        passengerflowforecast = PassengerFlowForecast.objects.filter(scenic_id=item.scenic_id).first()
+        if passengerflowforecast is not None:
+            print(passengerflowforecast)
+        else:
+            continue
+        # scenicpointList.append([passengerflowforecast.scenic_id,item.coordinate,passengerflowforecast.actual_number])
+    return JsonResponse({"1"})
+
+@csrf_exempt
+@api_view(['GET'])
+def association(request):
+    parent_id = request.get['scenic_id']
+    timestamp = int(request.POST.get("time"))
+    tempTime = time.localtime(timestamp)
+    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
+    sceniclist =  Scenic.objects.filter(parent_id=parent_id)
+    print(sceniclist)
+    scenicpointList = []
+    for item in sceniclist:
+        passengerflowforecast = PassengerFlowForecast.objects.filter(scenic_id=item.scenic_id).first()
+        if passengerflowforecast is not None:
+            print(passengerflowforecast)
+        else:
+            continue
+        # scenicpointList.append([passengerflowforecast.scenic_id,item.coordinate,passengerflowforecast.actual_number])
+    return JsonResponse({"1"})
+

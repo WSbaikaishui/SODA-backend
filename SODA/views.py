@@ -70,28 +70,56 @@ def distribution(request):
 @api_view(['POST'])
 def camera_time_list(request):
     camera_id = request.POST['camera_id']
-    cameraHistoryList = CameraHistory.objects.filter(
-        camera_id=camera_id)
+    scenic_id = request.POST['scenic_id']
+    cameraHistoryList=[]
+    if camera_id !='':
+        cameraHistories = CameraHistory.objects.filter(camera_id=camera_id)
+        for cameraHistory in cameraHistories :
+            cameraHistoryList.append(cameraHistory)
+    elif scenic_id !='' :
+        CameraList = Camera.objects.filter(scenic_id=scenic_id)
+        for camera in CameraList:
+            cameraHistories=camera.camerahistory_set.all()
+            for cameraHistory in cameraHistories :
+              cameraHistoryList.append(cameraHistory)
+   
     if cameraHistoryList is not None:
-        time=set()
+        timeList=[]
         for c in cameraHistoryList :
-            time.add(c.time)
-        return Response(time)
+            timeList.append(c.time.timestamp())
+        return Response(timeList)
     else:
         return JsonResponse({'msg':'不存在摄像头'})
 
 
+
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 def camera_list(request):
-    cameras = Camera.objects.all()
-    data=set();
-    for camera in cameras :
-        data.add(camera.camera_id);
-    if data is not None:
-      return Response(data)
+    camera_id = request.POST['camera_id']
+    scenic_id = request.POST['scenic_id']
+    timestamp = request.POST["time"]
+    cameraHistoryList=[]
+    if camera_id !='':
+        cameraHistories = CameraHistory.objects.filter(camera_id=camera_id)
+        for cameraHistory in cameraHistories :
+            cameraHistoryList.append(cameraHistory)
+    elif scenic_id !='' :
+        CameraList = Camera.objects.filter(scenic_id=scenic_id)
+        for camera in CameraList:
+            cameraHistories=camera.camerahistory_set.all()
+            for cameraHistory in cameraHistories :
+              cameraHistoryList.append(cameraHistory)
+   
+    if cameraHistoryList is not None:
+        date=[]
+        for c in cameraHistoryList :
+            if timestamp=='' or float(timestamp)==c.time.timestamp() :
+                ob={"max":int(c.number*1.2),"current":c.number,"position":1,"position":c.camera.coordinate,"cemareid":c.camera_id}
+                date.append(ob)
+        return Response(date)
     else:
-      return JsonResponse({'msg':'不存在摄像头'})
+        return JsonResponse({'msg':'不存在摄像头'})
 
 @csrf_exempt
 @api_view(['POST'])
@@ -100,27 +128,27 @@ def get_map(request):
     timestamp = int(request.POST["time"])
     tempTime = time.localtime(timestamp)
     timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
-    css=Camera.objects.filter(scenic_id=scenic_id)
-    chsall=set()
-    for cs in css :
-       chs=cs.camerahistory_set.filter(time=timeStr)
-       for ch in chs :
-           chsall.add(ch)
+    cameraList = Camera.objects.filter(scenic_id=scenic_id)
+    chsall = set()
+    for camera in cameraList:
+       chs = camera.camerahistory_set.filter(time=timeStr)
+       for ch in chs:
+            chsall.add(ch)
     if chsall is not None:
-        cemerasList=[]
+        cemerasList = []
         for ch in chsall:
-          images = {"src": ch.picture, "createdAt": timestamp}
-          cemeras = {"images": images, "cemeraid": ch.camera_id,
-                "name": "监控点1-1号监控"}
-          cemerasList.append(cemeras)
+            images = {"src": ch.picture, "createdAt": timestamp}
+            cemeras = {"images": images, "cemeraid": ch.camera_id,
+                        "name": "监控点1-1号监控"}
+            cemerasList.append(cemeras)
         data = {"cemeras": cemerasList, "Industry": random.randint(1111111, 9999999),
                 "name": random.randint(11111111, 99999999)}
         result = {"data": data,  "name": "监控点"+str(random.randint(1, 99)),
-                "coordinates": [random.randint(1, 99), random.randint(1, 99)],
-                "id": scenic_id}
+                  "coordinates": [random.randint(1, 99), random.randint(1, 99)],
+                  "id": scenic_id}
         return Response([result])
     else:
-        return JsonResponse({'msg':'不存在摄像头数据'})
+        return JsonResponse({'msg': '不存在摄像头数据'})
 
 
 

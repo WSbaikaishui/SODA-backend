@@ -5,7 +5,7 @@ from SODA.views import *
 
 
 urlpatterns = [
-    path('login', do_login),
+    path('do_login', do_login),
     path('register', do_register),
     path('api/get_camera_list', camera_list),
     path('api/distribution', distribution),

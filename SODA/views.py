@@ -18,21 +18,27 @@ from rest_framework_jwt.settings import api_settings
 @csrf_exempt
 @api_view(['POST'])
 def do_login(request):
-    uname = request.POST['username']
-    pwd = request.POST['password']
+    # uname = request.POST['username']
+    uname = request.POST.get('username')
+    print(uname)
+    pwd = request.POST.get('password')
     user = User.objects.filter(user_name = uname).first()
-    if user.pass_word == pwd:
-        return Response({'user_id': user.user_id})
+    if user is not None:
+        if user.pass_word == pwd:
+            return Response({'user_id': user.user_id})
+        else:
+            return JsonResponse({'msg': "用户名或者密码错误"})
     else:
         return JsonResponse({'msg': "用户名或者密码错误"})
+
 
 @csrf_exempt
 @api_view(['POST'])
 def do_register(request):
-    uname = request.POST['username']
-    pwd = request.POST['password']
-    phone = request.POST['phone']
-    type = request.POST['type']
+    uname = request.POST.get('username')
+    pwd = request.POST.get('password')
+    phone = request.POST.get('phone')
+    type = request.POST.get('type')
 
     user = User.objects.filter(user_name=uname).first()
     if user is not None:
@@ -58,7 +64,7 @@ def do_register(request):
 @csrf_exempt
 @api_view(['POST'])
 def distribution(request):
-    parent_id = request.POST['parent_id']
+    parent_id = request.POST.get('parent_id')
     try:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -81,14 +87,16 @@ def camera_list(request):
       return JsonResponse({'msg':'不存在摄像头'})
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 def get_map(request):
-    camera_id = request.GET["camera_id"]
-    timestamp = int(request.GET["time"])
+    camera_id = request.POST.get("camera_id")
+    print(camera_id)
+    timestamp = int(request.POSTget("time"))
     tempTime = time.localtime(timestamp)
     timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
     cameraHistory = CameraHistory.objects.filter(
         camera_id=camera_id, time=timeStr).first()
+    print(cameraHistory)
     if cameraHistory is not None:
         images = {"src": cameraHistory.picture, "createdAt": timestamp}
         imagesList = [images]
@@ -116,16 +124,23 @@ def dictfetchall(cursor):
 @csrf_exempt
 @api_view(['GET'])
 def get_predict_list(request):
-    scenic_id = request.GET["scenic_id"]
-    scenic = Scenic.objects.filter(scenic_id= scenic_id).first()
-    print(scenic)
-    if scenic is not None:
-        predict_list = PassengerFlowForecast.objects.filter(scenic_id=scenic_id)
-        print(predict_list)
-        serializer = PassengerFlowForecastSerializer(predict_list, many=True)
-        return Response(serializer.data)
-    else:
-        return JsonResponse({'msg':'不存在此景点'})
+    parent_id = request.GET['scenic_id']
+    time = []
+    actual = []
+    forecast = []
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from predictList where scenic_id = %s", (parent_id))
+            data = dictfetchall(cursor)
+            for item in data:
+                time.append(item['time'])
+                actual.append(item['actual_number'])
+                forecast.append(item['forecast_number'])
+        return JsonResponse({'parent_id': parent_id,'time':time, 'actual':actual, 'forecast':forecast})
+    except Exception as e:
+        return Response([])
+
 # @csrf_exempt
 # @api_view(['GET'])
 # def heat_map(request):

@@ -187,15 +187,6 @@ def get_predict_list(request):
             time.append(item.time)
             actual.append(item.actual_number)
             forecast.append(item.forecast_number)
-    # try:
-    #     with connection.cursor() as cursor:
-    #         cursor.execute(
-    #             "select * from predictList where scenic_id = %s", (parent_id))
-    #         data = dictfetchall(cursor)
-    #         for item in data:
-    #             time.append(item['time'])
-    #             actual.append(item['actual_number'])
-    #             forecast.append(item['forecast_number'])
         return JsonResponse({'scenic_id': scenic_id,'time':time, 'actual':actual, 'forecast':forecast})
     except Exception as e:
         return Response([])
@@ -226,6 +217,59 @@ def most_association(request):
             i += 1
             print(item['scenic_name1'])
             List.append({'name':item['scenic_name1'] + ' VS ' + item['scenic_name2'] ,'value':round(float((item['number']-726000)/1000 - i),2)})
+        return JsonResponse({'data':List})
+    except Exception as e:
+        return Response([])
+
+
+@csrf_exempt
+@api_view(['POST'])
+def get_scenic_rank(request):
+    # scenic_id = request.POST.get("scenic_id")
+    timestamp = int(request.POST.get("time"))
+    tempTime = time.localtime(timestamp)
+    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
+    Newtime = str(timeStr)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from rank_camera where time  = %s limit 5",(timeStr))
+
+            data = dictfetchall(cursor)
+        List = []
+        i = 0
+        for item in data:
+            i += 1
+            List.append({'name':item['scenic_name'] ,'value':item['number']})
+        return JsonResponse({'data':List})
+    except Exception as e:
+        return Response([])
+
+@csrf_exempt
+@api_view(['POST'])
+def get_camera_list(request):
+    # scenic_id = request.POST.get("scenic_id")
+    timestamp = int(request.POST.get("time"))
+    tempTime = time.localtime(timestamp)
+    timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
+    Newtime = str(timeStr)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from rank_camera where time  = %s ",(timeStr))
+
+            data = dictfetchall(cursor)
+        List = []
+        for item in data:
+            x = item['coordinate'].split(",")
+            print([float(x[0][1:]),float(x[1][:-1])])
+            List.append({'people':{
+                'current':item['number'],
+                'max':item['capacity']},
+                'name':item['scenic_name'],
+                'coordinates':[float(x[0][1:]),float(x[1][:-1])],
+                'id':item['camera_id']
+            })
         return JsonResponse({'data':List})
     except Exception as e:
         return Response([])

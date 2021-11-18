@@ -14,6 +14,9 @@ urlpatterns = [
     path('api/get_map', get_map),
     path('api/heat_map', heat_map),
     path('api/most_association', most_association),
+    path('api/get_scenic_rank', get_scenic_rank),
+    path('api/get_list', get_camera_list),
+
 
     # path('forecast/list',  passenger_flow_forecast_list),
     ]

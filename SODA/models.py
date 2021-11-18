@@ -204,3 +204,14 @@ class ScenicPassengerHeatmap(models.Model):
         managed = False
         db_table = 'scenic_passenger_heatmap'
         unique_together = (('scenic_id', 'parent_id'),)
+
+
+class Association(models.Model):
+    id = models.AutoField(primary_key=True)
+    scenic1 = models.ForeignKey("Scenic", on_delete=models.CASCADE)
+    scenic2 = models.ForeignKey("Scenic",  related_name='user_post',on_delete=models.CASCADE)
+    number = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'association'

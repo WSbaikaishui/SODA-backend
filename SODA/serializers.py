@@ -31,3 +31,8 @@ class User(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+class Association(serializers.ModelSerializer):
+    class Meta:
+        model = Association
+        fields = '__all__'

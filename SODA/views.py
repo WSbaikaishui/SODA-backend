@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast,ScenicPassengerHeatmap
-from SODA.serializers import PassengerFlowForecastSerializer
+from SODA.models import Camera, CameraHistory, User,Scenic,PassengerFlowForecast,ScenicPassengerHeatmap, Association
+from SODA.serializers import PassengerFlowForecastSerializer,ScenicSreializer
 from django.db import connection
 # Create your views here.
 
@@ -268,8 +268,45 @@ def get_camera_list(request):
                 'max':item['capacity']},
                 'name':item['scenic_name'],
                 'coordinates':[float(x[0][1:]),float(x[1][:-1])],
-                'id':item['camera_id']
+                    'id':item['camera_id']
             })
         return JsonResponse({'data':List})
     except Exception as e:
         return Response([])
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_association_list(request):
+    # scenic_id = request.POST.get("scenic_id")
+    # timestamp = int(request.POST.get("time"))
+    # tempTime = time.localtime(timestamp)
+    # timeStr = time.strftime("%Y-%m-%d %H:%M:%S", tempTime)
+    # Newtime = str(timeStr)
+    scenic_list = Scenic.objects.filter(parent_id = 0,scenic_id__lt=40)
+    List = []
+    for item  in scenic_list:
+        List.append({'id':str(item.scenic_id), 'label': item.scenic_name, 'size':int(item.capacity/2000) })
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from association where number >=600000 and scenic1_id <40 and scenic2_id <40 ")
+
+            data = dictfetchall(cursor)
+        List2 = []
+        for item in data:
+            List2.append({'source': str(item['scenic1_id']), 'target': str(item['scenic2_id']), 'size': float(item['number']/800000)})
+        return JsonResponse({'nodes': List,'edges':List2})
+    except Exception as e:
+        return Response([])
+
+@csrf_exempt
+@api_view(['GET'])
+def get_scenic(request):
+    scenic_id = request.GET["scenic_id"]
+    scenic = Scenic.objects.filter(scenic_id=scenic_id).first()
+    serializer = ScenicSreializer(scenic, many=False)
+    return JsonResponse({'data':serializer.data})
+
+
+

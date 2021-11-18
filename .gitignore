@@ -14,3 +14,5 @@ SODA_backend/__pycache__/__init__.cpython-38.pyc
 SODA_backend/__pycache__/settings.cpython-38.pyc
 SODA_backend/__pycache__/urls.cpython-38.pyc
 SODA_backend/__pycache__/wsgi.cpython-38.pyc
+SODA_backend/__pycache__/*.pyc
+SODA/__pycache__/*.pyc

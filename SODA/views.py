@@ -120,7 +120,7 @@ def camera_list(request):
         for c in cameraHistoryList :
             if timestamp=='' or float(timestamp)==c.time.timestamp() :
                 position=getPosition(c.camera.coordinate)
-                ob={"max":int(c.number*1.2),"current":c.number,"position":position,"cemareid":c.camera_id}
+                ob={"max":int(c.camera.scenic.capacity),"current":c.number,"position":position,"cemareid":c.camera_id}
                 date.append(ob)
         return Response(date)
     else:

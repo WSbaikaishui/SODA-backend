@@ -18,6 +18,7 @@ urlpatterns = [
     path('api/get_list', get_camera_list),
     path('api/get_association_list', get_association_list),
     path('api/get_scenic', get_scenic),
+    path('api/get_association_one', get_association_one),
 
 
     # path('forecast/list',  passenger_flow_forecast_list),

@@ -1,4 +1,3 @@
-import request
 import random
 import time
 from django.core import serializers
@@ -309,4 +308,21 @@ def get_scenic(request):
     return JsonResponse({'data':serializer.data})
 
 
-
+@csrf_exempt
+@api_view(['GET'])
+def get_association_one(request):
+    scenic_id = request.GET["scenic_id"]
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select * from association_list where scenic1 = %s or scenic2 = %s order by number desc limit 5",(scenic_id,scenic_id))
+            data = dictfetchall(cursor)
+        List2 = []
+        i = 0
+        for item in data:
+            i += 1
+            print(item['scenic_name1'])
+            List2.append({'name':item['scenic_name1'] + ' VS ' + item['scenic_name2'] ,'value':round(float((item['number']-726000)/1000 - i),2)})
+        return JsonResponse({'data':List2})
+    except Exception as e:
+        return Response(e)

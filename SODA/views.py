@@ -98,7 +98,7 @@ def camera_time_list(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 def camera_list(request):
     camera_id = request.POST.get('camera_id')
     scenic_id = request.POST.get('scenic_id')
@@ -119,7 +119,8 @@ def camera_list(request):
         date=[]
         for c in cameraHistoryList :
             if timestamp=='' or float(timestamp)==c.time.timestamp() :
-                ob={"max":int(c.number*1.2),"current":c.number,"position":1,"position":c.camera.coordinate,"cemareid":c.camera_id}
+                position=getPosition(c.camera.coordinate)
+                ob={"max":int(c.number*1.2),"current":c.number,"position":position,"cemareid":c.camera_id}
                 date.append(ob)
         return Response(date)
     else:
@@ -148,11 +149,19 @@ def get_map(request):
         data = {"cemeras": cemerasList, "Industry": random.randint(1111111, 9999999),
                 "name": random.randint(11111111, 99999999)}
         result = {"data": data,  "name": "监控点"+str(random.randint(1, 99)),
-                  "coordinates": [random.randint(1, 99), random.randint(1, 99)],
+                  "position": [random.randint(1, 99), random.randint(1, 99)],
                   "id": scenic_id}
         return Response([result])
     else:
         return JsonResponse({'msg': '不存在摄像头数据'})
+
+def getPosition(coordinate):
+   strings=coordinate.split(',')
+   s0=strings[0]
+   s1=strings[1]
+   lag=s0[1:len(s0)+1]
+   lat=s1[0:len(s1)-1]
+   return [float(lag),float(lat)]
 
 
 
